@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: codecruncher
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: codecruncher
+
+  template:
+    metadata:
+      labels:
+        app: codecruncher
+
+    spec:
+      containers:
+        - name: codecruncher
+          image: codecruncher:v1
+          imagePullPolicy: Never
+
+          ports:
+            - containerPort: 80
