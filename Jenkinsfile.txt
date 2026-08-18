@@ -1,0 +1,55 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Install Dependencies') {
+            steps {
+                echo 'Installing dependencies...'
+                sh 'npm ci'
+            }
+        }
+
+        stage('Build Application') {
+            steps {
+                echo 'Building application...'
+                sh 'npm run build'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh '''
+                    if npm run | grep -q "test"; then
+                        npm test
+                    else
+                        echo "No test script found. Skipping tests."
+                    fi
+                '''
+            }
+        }
+
+        stage('Package Application') {
+            steps {
+                sh 'tar -czf CodeCruncher-build.tar.gz dist/'
+            }
+        }
+
+        stage('Deliver Artifact') {
+            steps {
+                archiveArtifacts artifacts: 'CodeCruncher-build.tar.gz',
+                                 fingerprint: true
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+
+        failure {
+            echo 'Pipeline failed.'
+        }
+    }
+}
