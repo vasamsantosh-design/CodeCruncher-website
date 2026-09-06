@@ -1,0 +1,44 @@
+services:
+
+  codecruncher:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: codecruncher-app
+
+    ports:
+      - "8080:80"
+
+    restart: unless-stopped
+
+    depends_on:
+      - database
+
+    networks:
+      - codecruncher-network
+
+  database:
+    image: postgres:16-alpine
+
+    container_name: codecruncher-db
+
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: codecruncher
+      POSTGRES_USER: codecruncher
+      POSTGRES_PASSWORD: codecruncher_demo_password
+
+    volumes:
+      - codecruncher-db-data:/var/lib/postgresql/data
+
+    networks:
+      - codecruncher-network
+
+networks:
+  codecruncher-network:
+    driver: bridge
+
+volumes:
+  codecruncher-db-data:
