@@ -1,0 +1,737 @@
+============================================================
+        CODECRUNCHER DOCKER DEPLOYMENT REPORT
+============================================================
+
+Project: CodeCruncher
+Repository: CodeCruncher-website
+AWS Region: ap-south-1
+Platform: Ubuntu EC2
+Deployment: Docker, Docker Compose, Amazon ECR, ECS Fargate
+
+============================================================
+1. PROJECT OVERVIEW
+============================================================
+
+CodeCruncher is a React + TypeScript + Vite web application.
+
+The application was containerized using Docker and served through
+Nginx. Docker Compose was used to deploy the application together
+with PostgreSQL. The Docker image was pushed to Amazon ECR and
+deployed to Amazon ECS using AWS Fargate.
+
+Architecture:
+
+Developer
+    |
+    v
+Dockerfile
+    |
+    v
+Docker Image
+    |
+    v
+Docker Container
+    |
+    v
+CodeCruncher Application
+
+AWS Architecture:
+
+Developer
+    |
+    v
+Dockerfile
+    |
+    v
+Docker Image
+    |
+    v
+Amazon ECR
+    |
+    v
+ECS Task Definition
+    |
+    v
+ECS Service
+    |
+    v
+AWS Fargate
+    |
+    v
+CodeCruncher Application
+
+
+============================================================
+2. DOCKER INSTALLATION VERIFICATION
+============================================================
+
+Ubuntu Version:
+Ubuntu 26.04 LTS
+
+Architecture:
+x86_64
+
+Docker Version:
+Docker 29.1.3
+
+Docker Compose Version:
+Docker Compose v5.5.0
+
+Commands:
+
+docker --version
+docker compose version
+docker info
+docker ps
+docker images
+
+Docker installation was successfully verified.
+
+
+============================================================
+3. DOCKER DAEMON STATUS
+============================================================
+
+Command:
+
+sudo systemctl status docker --no-pager
+
+Result:
+
+Docker service was active and running.
+
+Docker was also configured to start automatically during system
+boot.
+
+Command:
+
+sudo systemctl enable docker
+
+
+============================================================
+4. DOCKER HELLO-WORLD VERIFICATION
+============================================================
+
+Command:
+
+docker run hello-world
+
+Result:
+
+Hello from Docker!
+
+The successful execution confirmed that:
+
+1. Docker client can communicate with Docker daemon.
+2. Docker can pull images from Docker Hub.
+3. Docker can create containers.
+4. Docker containers can execute successfully.
+
+
+============================================================
+5. CODECRUNCHER DOCKERFILE
+============================================================
+
+The application uses a multi-stage Dockerfile.
+
+Build stage:
+Node.js 20 Alpine
+
+Runtime stage:
+Nginx 1.27 Alpine
+
+Dockerfile instructions include:
+
+FROM
+WORKDIR
+COPY
+RUN
+EXPOSE
+CMD
+
+The Dockerfile builds the React/Vite application and copies the
+generated dist directory into the Nginx web server.
+
+
+============================================================
+6. DOCKER IMAGE CREATION
+============================================================
+
+Command:
+
+docker build -t codecruncher:v1 .
+
+Result:
+
+Successfully built the CodeCruncher Docker image.
+
+Image:
+
+codecruncher:v1
+
+Image ID:
+
+84b41743192c
+
+
+============================================================
+7. DOCKER CONTAINER DEPLOYMENT
+============================================================
+
+Command:
+
+docker run -d --name codecruncher-container \
+-p 8080:80 codecruncher:v1
+
+Container:
+
+codecruncher-container
+
+Port Mapping:
+
+Host Port 8080
+       |
+       v
+Container Port 80
+
+
+============================================================
+8. CONTAINER VERIFICATION
+============================================================
+
+Command:
+
+docker ps
+
+The CodeCruncher container was successfully started.
+
+Port:
+
+0.0.0.0:8080 -> 80/tcp
+
+
+Application verification:
+
+curl -I http://localhost:8080
+
+Result:
+
+HTTP/1.1 200 OK
+
+Server: nginx/1.27.5
+
+
+============================================================
+9. DOCKER LOGS
+============================================================
+
+Command:
+
+docker logs codecruncher-container
+
+The logs confirmed that Nginx started successfully.
+
+Important log:
+
+Configuration complete; ready for start up
+
+Nginx started worker processes successfully.
+
+
+============================================================
+10. DOCKER CONTAINER MANAGEMENT
+============================================================
+
+Commands demonstrated:
+
+docker stop codecruncher-container
+
+docker start codecruncher-container
+
+docker restart codecruncher-container
+
+docker logs codecruncher-container
+
+docker inspect codecruncher-container
+
+docker rm codecruncher-container
+
+docker rmi codecruncher:v1
+
+
+============================================================
+11. DOCKER COMPOSE DEPLOYMENT
+============================================================
+
+Docker Compose was used to deploy two services:
+
+1. CodeCruncher Application
+2. PostgreSQL Database
+
+Command:
+
+docker compose up -d
+
+Services:
+
+codecruncher-app
+codecruncher-db
+
+
+============================================================
+12. DOCKER COMPOSE NETWORK
+============================================================
+
+Network:
+
+codecruncher-website_codecruncher-network
+
+Network Type:
+
+Bridge
+
+Subnet:
+
+172.19.0.0/16
+
+Containers connected to the network:
+
+codecruncher-app
+codecruncher-db
+
+
+============================================================
+13. POSTGRESQL DATABASE
+============================================================
+
+Database Container:
+
+codecruncher-db
+
+PostgreSQL Version:
+
+16 Alpine
+
+Database:
+
+codecruncher
+
+Database User:
+
+codecruncher
+
+PostgreSQL port:
+
+5432
+
+
+Database health verification:
+
+docker exec codecruncher-db \
+pg_isready -U codecruncher -d codecruncher
+
+Result:
+
+/var/run/postgresql:5432 - accepting connections
+
+
+============================================================
+14. PERSISTENT STORAGE
+============================================================
+
+Docker volume:
+
+codecruncher-website_codecruncher-db-data
+
+Mount:
+
+/var/lib/postgresql/data
+
+The volume provides persistent storage for PostgreSQL database
+data.
+
+
+============================================================
+15. DOCKER COMPOSE VERIFICATION
+============================================================
+
+Command:
+
+docker compose ps
+
+Expected services:
+
+codecruncher-app
+codecruncher-db
+
+Both services were successfully started.
+
+Application:
+
+0.0.0.0:8080 -> 80/tcp
+
+Database:
+
+5432/tcp
+
+
+============================================================
+16. AMAZON ECR DEPLOYMENT
+============================================================
+
+AWS Region:
+
+ap-south-1
+
+ECR Repository:
+
+codecruncher
+
+ECR URI:
+
+809312053369.dkr.ecr.ap-south-1.amazonaws.com/codecruncher
+
+Docker image:
+
+codecruncher:v1
+
+
+============================================================
+17. ECR AUTHENTICATION
+============================================================
+
+Command:
+
+aws ecr get-login-password --region ap-south-1 | \
+docker login --username AWS --password-stdin \
+809312053369.dkr.ecr.ap-south-1.amazonaws.com
+
+Result:
+
+Login Succeeded
+
+
+============================================================
+18. ECR IMAGE TAGGING
+============================================================
+
+Command:
+
+docker tag codecruncher:v1 \
+809312053369.dkr.ecr.ap-south-1.amazonaws.com/codecruncher:v1
+
+
+============================================================
+19. ECR IMAGE PUSH
+============================================================
+
+Command:
+
+docker push \
+809312053369.dkr.ecr.ap-south-1.amazonaws.com/codecruncher:v1
+
+Result:
+
+Image successfully pushed to Amazon ECR.
+
+Image digest:
+
+sha256:84b41743192c1c1dad0dc88f44a54bf79cd6b73824355e65b7c49c46c62d0d4a
+
+
+============================================================
+20. ECS CLUSTER
+============================================================
+
+ECS Cluster:
+
+codecruncher-cluster
+
+Region:
+
+ap-south-1
+
+Status:
+
+ACTIVE
+
+
+============================================================
+21. ECS TASK DEFINITION
+============================================================
+
+Task Definition:
+
+codecruncher-task
+
+Revision:
+
+1
+
+Status:
+
+ACTIVE
+
+CPU:
+
+256
+
+Memory:
+
+512 MB
+
+Container Port:
+
+80
+
+CloudWatch Log Group:
+
+/ecs/codecruncher
+
+
+============================================================
+22. ECS SERVICE
+============================================================
+
+ECS Service:
+
+codecruncher-service
+
+Status:
+
+ACTIVE
+
+Desired Count:
+
+1
+
+Running Count:
+
+1
+
+Launch Type:
+
+AWS Fargate
+
+
+============================================================
+23. FARGATE TASK
+============================================================
+
+Fargate Task ARN:
+
+arn:aws:ecs:ap-south-1:809312053369:task/codecruncher-cluster/daf62f74828b45638287190372f1df39
+
+The Fargate task was successfully launched and was running as
+part of the CodeCruncher ECS service.
+
+
+============================================================
+24. APPLICATION VERIFICATION
+============================================================
+
+Fargate Application Endpoint:
+
+http://3.110.189.128
+
+Verification command:
+
+curl -i 3.110.189.128
+
+Result:
+
+HTTP/1.1 200 OK
+
+Server:
+
+nginx/1.27.5
+
+The CodeCruncher application was successfully accessible from
+the deployed Fargate task.
+
+
+============================================================
+25. PROBLEMS ENCOUNTERED
+============================================================
+
+Problem 1:
+Docker container name already existed.
+
+Error:
+
+Conflict. The container name was already in use.
+
+Solution:
+
+docker rm -f codecruncher-container
+
+
+Problem 2:
+Port 8080 was already allocated.
+
+Error:
+
+Bind for 0.0.0.0:8080 failed:
+port is already allocated
+
+Solution:
+
+The existing container using port 8080 was stopped and removed.
+
+Commands:
+
+docker stop codecruncher-container
+docker rm codecruncher-container
+
+
+Problem 3:
+VITE_SUPABASE_URL environment variable warning.
+
+Solution:
+
+The Compose configuration was reviewed and build arguments were
+removed where they were not consumed by the Dockerfile.
+
+
+Problem 4:
+Docker Compose buildx warning.
+
+The available Docker Compose installation used the classic build
+process successfully, and the image was created successfully.
+
+
+============================================================
+26. TROUBLESHOOTING STEPS
+============================================================
+
+Commands used during troubleshooting:
+
+docker ps
+docker ps -a
+docker images
+docker logs
+docker inspect
+docker network inspect
+docker volume ls
+docker compose config
+docker compose ps
+docker compose logs
+curl -I http://localhost:8080
+docker exec codecruncher-db pg_isready
+
+
+============================================================
+27. SECURITY CONSIDERATIONS
+============================================================
+
+1. Do not commit .env files to GitHub.
+2. Do not expose database port 5432 publicly.
+3. Use IAM roles instead of hard-coded AWS credentials.
+4. Restrict EC2 and ECS Security Group rules.
+5. Use HTTPS for production deployments.
+6. Store secrets in AWS Secrets Manager or Parameter Store.
+7. Enable ECR image scanning.
+8. Keep Docker base images updated.
+9. Use versioned Docker image tags.
+10. Apply least-privilege IAM policies.
+
+
+============================================================
+28. RESOURCE OPTIMIZATION
+============================================================
+
+1. Multi-stage Docker builds reduce runtime image size.
+2. Nginx provides a lightweight production runtime.
+3. Use npm ci for reproducible builds.
+4. Remove unused Docker images and containers.
+5. Apply ECR lifecycle policies.
+6. Monitor Fargate CPU and memory usage.
+7. Configure ECS auto scaling when application traffic increases.
+
+
+============================================================
+29. RECOMMENDED IMPROVEMENTS
+============================================================
+
+1. Add an Application Load Balancer.
+2. Enable HTTPS using AWS Certificate Manager.
+3. Run ECS tasks in private subnets.
+4. Use CloudWatch dashboards and alarms.
+5. Implement automated CI/CD.
+6. Use AWS Secrets Manager.
+7. Enable ECR vulnerability scanning.
+8. Configure ECS service auto scaling.
+9. Implement health checks.
+10. Use immutable image tags for production.
+
+
+============================================================
+30. FINAL ARCHITECTURE
+============================================================
+
+                 DEVELOPER
+                     |
+                     v
+                 DOCKERFILE
+                     |
+                     v
+               DOCKER IMAGE
+                     |
+                     v
+                AMAZON ECR
+                     |
+                     v
+            ECS TASK DEFINITION
+                     |
+                     v
+                ECS SERVICE
+                     |
+                     v
+               AWS FARGATE
+                     |
+                     v
+             CODECRUNCHER APP
+
+
+Docker Compose:
+
+             CODECRUNCHER APP
+                     |
+                     |
+          Docker Network
+                     |
+                     v
+             POSTGRESQL DB
+                     |
+                     v
+             Persistent Volume
+
+
+============================================================
+31. CONCLUSION
+============================================================
+
+The CodeCruncher application was successfully containerized using
+Docker and deployed using Docker Compose and AWS ECS Fargate.
+
+Docker installation and daemon operation were verified.
+The application Docker image was successfully built and tested.
+The application was successfully served through Nginx.
+
+Docker Compose successfully deployed the CodeCruncher application
+and PostgreSQL database using a dedicated Docker network and
+persistent database volume.
+
+The Docker image was successfully pushed to Amazon ECR and
+deployed to an ECS Fargate service.
+
+The deployed application returned HTTP 200 OK, confirming that
+the application was successfully running in AWS.
+
+This project demonstrates practical knowledge of Docker,
+containerization, Docker Compose, Amazon ECR, Amazon ECS,
+AWS Fargate, networking, monitoring and troubleshooting.
+
+============================================================
+                 END OF REPORT
+============================================================
